@@ -13,12 +13,10 @@ public class CarRiskRateRule : Rule
         Vehicle vehicle = null;
 
         When()
-            .Match(() => vehicle, v => v.Type.Equals(null))
+            .Match(() => vehicle)
             .Match<VehicleModelRiskFact>(() => vehicleModelRiskFact, mrf => mrf.Model.Equals(vehicle.Model));
         Then()
-            .Do(ctx => ctx.Insert(new Vehicle(vehicle.Id, vehicle.Age, vehicle.Model, vehicle.Mileage,
-                vehicleModelRiskFact.RiskType)))
-            .Do(ctx => ctx.Retract(vehicle));
+            .Do(ctx => ctx.Insert(new AutoRisk(vehicleModelRiskFact.RiskType,vehicle.Id)));
         Priority(5);
     }
 }

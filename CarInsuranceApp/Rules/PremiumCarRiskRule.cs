@@ -8,12 +8,12 @@ public class PremiumCarRiskRule : Rule
 {
     public override void Define()
     {
-        Vehicle vehicle = null;
+        AutoRisk autoRisk = null;
 
         When()
-            .Match(() => vehicle, v => v.Type.Equals(VehicleRiskType.Premium));
+            .Match(() => autoRisk, ar => ar.RiskType.Equals(VehicleRiskType.Premium));
         Then()
-            .Do(ctx => ctx.Insert(new CarPolicyActionLog(vehicle.Id, 500 * 0.4,
+            .Do(ctx => ctx.Insert(new CarPolicyActionLog(autoRisk.VehicleID, 500 * 0.4,
                 "Naliczono opłate 40% za auto premium")));
         Priority(4);
     }

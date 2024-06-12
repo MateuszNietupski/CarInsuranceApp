@@ -8,11 +8,11 @@ public class HighRiskVehicleRule : Rule
 {
     public override void Define()
     {
-        Vehicle vehicle = null;
+        AutoRisk autoRisk = null;
         When()
-            .Match(() => vehicle, v => v.Type.Equals(VehicleRiskType.HighRisk));
+            .Match(() => autoRisk, ar => ar.RiskType.Equals(VehicleRiskType.HighRisk));
         Then()
-            .Do(ctx => ctx.Insert(new CarPolicyActionLog(vehicle.Id, 500 * 0.2,
+            .Do(ctx => ctx.Insert(new CarPolicyActionLog(autoRisk.VehicleID, 500 * 0.2,
                 "Naliczono opłate 20% za auto wysokiego ryzyka")));
         Priority(4);
     }
