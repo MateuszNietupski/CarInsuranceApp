@@ -13,8 +13,8 @@ public class PremiumCarRiskRule : Rule
         When()
             .Match(() => autoRisk, ar => ar.RiskType.Equals(VehicleRiskType.Premium));
         Then()
-            .Do(ctx => ctx.Insert(new CarPolicyActionLog(autoRisk.VehicleID, 500 * 0.4,
-                "Naliczono opłate 40% za auto premium")));
+            .Do(ctx => ctx.Insert(new CarPolicyActionLog(autoRisk.VehicleID, 500 * 2,
+                "Naliczono opłate 200% za auto premium")));
         Priority(4);
     }
 }

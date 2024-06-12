@@ -12,8 +12,8 @@ public class HighRiskVehicleRule : Rule
         When()
             .Match(() => autoRisk, ar => ar.RiskType.Equals(VehicleRiskType.HighRisk));
         Then()
-            .Do(ctx => ctx.Insert(new CarPolicyActionLog(autoRisk.VehicleID, 500 * 0.2,
-                "Naliczono opłate 20% za auto wysokiego ryzyka")));
+            .Do(ctx => ctx.Insert(new CarPolicyActionLog(autoRisk.VehicleID, 500,
+                "Naliczono opłate 100% za auto wysokiego ryzyka")));
         Priority(4);
     }
 }
