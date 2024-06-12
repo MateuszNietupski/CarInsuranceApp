@@ -1,0 +1,102 @@
+﻿@page "/"
+@using CarInsuranceApp.Models
+@using CarInsuranceApp.Rules
+@using CarInsuranceApp.Services
+@inject RuleEngineService RuleEngineService
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="pa-8">
+    <MudText Typo="Typo.h4">Formularz Ubezpieczeniowy</MudText>
+    <MudForm Model="@driver">
+        <MudNumericField T="int" @bind-Value="driver.Age" Label="Wiek kierowcy" Variant="Variant.Outlined" Required="true" Min="18" Max="100" Immediate="true" ValueChangedDelay="0"/>
+        <MudNumericField T="int" Min="0" @bind-Value="driver.YearsOfExperience" Label="Lata doświadczenia" Variant="Variant.Outlined" Required="true"  class="mb-4" />
+        
+        
+        @foreach (var vehicle in vehicles)
+        {
+            <div class="mb-2">
+                <label for="model">Model pojazdu:</label>
+                <select class="form-control" @bind="vehicle.Model">
+                    @foreach (var model in predefinedVehicleModels)
+                    {
+                        <option value='@model'>@model</option>
+                    }
+                </select>
+            </div>
+            <MudNumericField T="int" Min="0" @bind-Value="vehicle.Age" Label="Wiek pojazdu" Variant="Variant.Outlined" Required="true" class="mb-2"/>
+            <MudNumericField T="int" Min="0" @bind-Value="vehicle.Mileage" Label="Przebieg pojazdu" Variant="Variant.Outlined" Required="true" class="mb-4"/>
+        }
+        <MudButton OnClick="@AddVehicle" Variant="Variant.Filled" Color="Color.Primary" class="mb-4">Dodaj pojazd</MudButton>
+        <MudButton OnClick="@HandleValidSubmit" Variant="Variant.Filled" Color="Color.Primary">Zapisz</MudButton>
+    </MudForm>
+    
+    <MudContainer MaxWidth="MaxWidth.Medium" Class="pa-4 mt-4">
+        <MudText Typo="Typo.h6">Całkowity koszt polisy:</MudText>
+        <MudText Typo="Typo.subtitle1">@policyCost?.Cost</MudText>
+    </MudContainer>
+    <MudContainer MaxWidth="MaxWidth.Medium" Class="pa-4 mt-4">
+        <MudText Typo="Typo.h6">Szczegóły składników polisy:</MudText>
+        @foreach (var vehicle in vehicles)
+        {
+            @if (carPolicyActionLogs != null && carPolicyActionLogs.Any())
+            {
+                var logsForVehicle = carPolicyActionLogs.Where(log => log.VehicleId == vehicle.Id).ToList();
+                <MudTable Items="@logsForVehicle">
+                    <HeaderContent>
+                        <MudTh>Kwota</MudTh>
+                        <MudTh>Opis</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Kwota">@context.Amount</MudTd>
+                        <MudTd DataLabel="Opis">@context.Description</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        }
+        @if (policyActionLogs != null && policyActionLogs.Any())
+        { 
+            <MudTable Items="@policyActionLogs">
+                <HeaderContent>
+                    <MudTh>Kwota</MudTh>
+                    <MudTh>Opis</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Kwota">@context.Amount</MudTd>
+                    <MudTd DataLabel="Opis">@context.Description</MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
+    </MudContainer>
+</MudContainer>
+
+@code {
+    private bool showDateInput = false;
+    private DateTime? selectedDate;
+    private Driver driver = new Driver();
+    List<AccidentHistory> AccidentHistories = new(){new AccidentHistory()};
+    private string selectedVehicleModel;
+    private List<string> predefinedVehicleModels;
+    private List<PolicyActionLog> policyActionLogs;
+    private PolicyCost policyCost;
+    List<Vehicle> vehicles = new(){new Vehicle()};
+    List<CarPolicyActionLog> carPolicyActionLogs;
+    private int nextVehicleId = 1;
+    protected override void OnInitialized()
+    {
+        predefinedVehicleModels = RuleEngineService.GetPredefinedModels();
+    }
+
+    private void AddVehicle()
+    {
+        var newVehicle = new Vehicle(nextVehicleId);
+        vehicles.Add(newVehicle); 
+        nextVehicleId++; 
+    }
+    private void HandleValidSubmit()
+    {
+        RuleEngineService.RunEngine(driver,vehicles);
+        
+        policyActionLogs = RuleEngineService.GetFacts<PolicyActionLog>();
+        policyCost = RuleEngineService.GetFacts<PolicyCost>().FirstOrDefault();
+        carPolicyActionLogs = RuleEngineService.GetFacts<CarPolicyActionLog>();
+    }
+}
