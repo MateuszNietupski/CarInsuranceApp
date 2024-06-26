@@ -17,7 +17,7 @@ public class AccidentHistoryRule : Rule
                  (DateTime.Now - accidentHistory.AccidentDate).TotalDays < 1825
                     ? vehiclesPolicyCost.Amount * 0.2
                     : vehiclesPolicyCost.Amount * 0.1,
-                $"Naliczono opłate za historię wypadków {((DateTime.Now - accidentHistory.AccidentDate).TotalDays < 1825 ? 500 * 0.2 : 500 * 0.1)}")));
+                $"Naliczono opłate za historię wypadków {((DateTime.Now - accidentHistory.AccidentDate).TotalDays < 1825 ? 20 :10)}%")));
         Priority(1);
     }
 }

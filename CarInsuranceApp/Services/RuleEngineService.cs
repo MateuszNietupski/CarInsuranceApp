@@ -25,13 +25,18 @@ public class RuleEngineService
             new VehicleModelRiskFact { Model = "Ferrari", RiskType = VehicleRiskType.Premium },
         };
     }
-    public void RunEngine(Driver driver,List<Vehicle> vehicles)
+    public void RunEngine(Driver driver, List<Vehicle> vehicles, List<AccidentHistory> accidentHistories)
     {
         _session = _sessionFactory.CreateSession();
         _session.Insert(driver);
         foreach (var vehicle in vehicles)
         {
             _session.Insert(vehicle);
+        }
+
+        foreach (var accident in accidentHistories)
+        {
+            _session.Insert(accident);
         }
         
         foreach (var fact in _predefinedVehiclesRiskFacts)

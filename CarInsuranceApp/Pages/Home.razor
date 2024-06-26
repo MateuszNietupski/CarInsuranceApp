@@ -1,6 +1,5 @@
 ﻿@page "/"
 @using CarInsuranceApp.Models
-@using CarInsuranceApp.Rules
 @using CarInsuranceApp.Services
 @inject RuleEngineService RuleEngineService
 
@@ -10,6 +9,15 @@
         <MudNumericField T="int" @bind-Value="driver.Age" Label="Wiek kierowcy" Variant="Variant.Outlined" Required="true" Min="18" Max="100" Immediate="true" ValueChangedDelay="0"/>
         <MudNumericField T="int" Min="0" @bind-Value="driver.YearsOfExperience" Label="Lata doświadczenia" Variant="Variant.Outlined" Required="true"  class="mb-4" />
         
+        @foreach (var accident in accidentHistories)
+        {
+            <div class="mb-2">
+                <label>Data wypadku:</label>
+                <input type="date" @bind="accident.AccidentDate" max="@today"/>
+                <MudButton Variant="Variant.Outlined" Color="Color.Error" @onclick="@(() => accidentHistories.Remove(accident))">Usuń wypadek</MudButton>
+            </div>
+        }
+        <MudButton OnClick="@AddAccident" Variant="Variant.Filled" Color="Color.Primary" class="mb-4">Dodaj wypadek</MudButton>
         @foreach (var vehicle in vehicles)
         {
             <div class="mb-2">
@@ -18,11 +26,16 @@
                     @foreach (var model in predefinedVehicleModels)
                     {
                         <option value='@model'>@model</option>
+                        
                     }
                 </select>
             </div>
             <MudNumericField T="int" Min="0" @bind-Value="vehicle.Age" Label="Wiek pojazdu" Variant="Variant.Outlined" Required="true" class="mb-2"/>
-            <MudNumericField T="int" Min="0" @bind-Value="vehicle.Mileage" Label="Przebieg pojazdu" Variant="Variant.Outlined" Required="true" class="mb-4"/>
+            <MudNumericField T="int" Min="0" @bind-Value="vehicle.Mileage" Label="Przebieg pojazdu" Variant="Variant.Outlined" Required="true" class="mb-2"/>
+            @if (vehicles.Count > 1)
+            {
+                <MudButton Variant="Variant.Outlined" Color="Color.Error" @onclick="@(() => vehicles.Remove(vehicle))" class="mb-4">Usuń pojazd</MudButton>
+            }
         }
         <MudButton OnClick="@AddVehicle" Variant="Variant.Filled" Color="Color.Primary" class="mb-4">Dodaj pojazd</MudButton>
         <MudButton OnClick="@HandleValidSubmit" Variant="Variant.Filled" Color="Color.Primary">Oblicz polise</MudButton>
@@ -82,10 +95,10 @@
 </MudContainer>
 
 @code {
+    private string today = DateTime.Now.ToString("yyyy-MM-dd");
     private bool showDateInput = false;
-    private DateTime? selectedDate;
     private Driver driver = new Driver();
-    List<AccidentHistory> AccidentHistories = new(){new AccidentHistory()};
+    List<AccidentHistory> accidentHistories = new();
     private string selectedVehicleModel;
     private List<string> predefinedVehicleModels;
     private List<PolicyActionLog> policyActionLogs;
@@ -94,11 +107,11 @@
     List<CarPolicyActionLog> carPolicyActionLogs;
     List<VehiclePolicyBaseCost> vehiclePolicyBaseCosts;
     private int nextVehicleId = 1;
+    private int nextAccidentId = 1;
     protected override void OnInitialized()
     {
         predefinedVehicleModels = RuleEngineService.GetPredefinedModels();
     }
-
     private void AddVehicle()
     {
         var newVehicle = new Vehicle(nextVehicleId);
@@ -107,11 +120,16 @@
     }
     private void HandleValidSubmit()
     {
-        RuleEngineService.RunEngine(driver,vehicles);
-        
+        RuleEngineService.RunEngine(driver,vehicles,accidentHistories);
         policyActionLogs = RuleEngineService.GetFacts<PolicyActionLog>();
         policyCost = RuleEngineService.GetFacts<PolicyCost>().FirstOrDefault();
         carPolicyActionLogs = RuleEngineService.GetFacts<CarPolicyActionLog>();
         vehiclePolicyBaseCosts = RuleEngineService.GetFacts<VehiclePolicyBaseCost>();
+    }
+    private void AddAccident()
+    {
+        var newAccident = new AccidentHistory(nextAccidentId);
+        accidentHistories.Add(newAccident);
+        nextAccidentId++;
     }
 }

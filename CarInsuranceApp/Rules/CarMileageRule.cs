@@ -10,7 +10,7 @@ public class CarMileageRule : Rule
         Vehicle vehicle = null;
         
         When()
-            .Match(() => vehicle, v => v.Mileage <= 5000);
+            .Match(() => vehicle, v => v.Mileage <= 50000);
         Then()
             .Do(ctx => ctx.Insert(new CarPolicyActionLog(vehicle.Id ,500 * 0.1 *-1,"Zastosowano zniżke za niski przebieg auta 10%")));
         Priority(4);
